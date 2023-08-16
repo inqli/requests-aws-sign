@@ -1,8 +1,8 @@
 try:
-    from urllib.parse import urlparse, urlencode, parse_qs
+    from urllib.parse import urlparse, urlencode, parse_qs, quote
 except ImportError:
     from urlparse import urlparse, parse_qs
-    from urllib import urlencode
+    from urllib import urlencode, quote
 
 from botocore.auth import SigV4Auth
 from botocore.awsrequest import AWSRequest
@@ -25,7 +25,9 @@ class AWSV4Sign(requests.auth.AuthBase):
         path = url.path or '/'
         querystring = ''
         if url.query:
-            querystring = '?' + urlencode(parse_qs(url.query, keep_blank_values=True), doseq=True)
+            querystring = "?" + urlencode(
+                parse_qs(url.query, keep_blank_values=True), doseq=True, quote_via=quote
+            )
         headers = {k.lower():v for k,v in r.headers.items()}
         location = headers.get('host') or url.netloc
         safe_url = url.scheme + '://' + location + path + querystring
